@@ -1,0 +1,24 @@
+{
+  "name": "cordova-plugin-xgpush",
+  "version": "0.1.0",
+  "description": "腾讯信鸽推送服务：http://xg.qq.com/",
+  "main": "index.js",
+  "dependencies": {
+    "es6-promise": "^3.0.2",
+    "eventemitter3": "^1.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunlu/cordova-plugin-xgpush.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sunlu/cordova-plugin-xgpush/issues"
+  },
+  "homepage": "https://github.com/sunlu/cordova-plugin-xgpush#readme"
+}
