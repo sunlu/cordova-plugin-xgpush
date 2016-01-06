@@ -7,20 +7,19 @@
   <keywords>cordova, push, chinese</keywords>
   <repo>https://github.com/sunlu/cordova-plugin-xgpush.git</repo>
   <issue>https://github.com/sunlu/cordova-plugin-xgpush/issues</issue>
-  <engines>
-    <engine name="cordova" version="&gt;3.0.0" />
-  </engines>
+   
   <preference name="ACCESS_ID" />
   <preference name="ACCESS_KEY" />
-  <js-module name="XGPush" src="www/xgpush.js">
-    <clobbers target="window.xgpush" />
+  
+  <js-module name="xgpush" src="www/xgpush.js">
+    <clobbers target="xgpush" />
   </js-module>
+  
   <!-- android -->
   <platform name="android">
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="XGPush">
         <param name="android-package" value="net.sunlu.xgpush.XGPushPlugin" />
-        <param name="onload" value="true" />
       </feature>
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest">
