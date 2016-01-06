@@ -1,7 +1,3 @@
-cordova.define("cordova-plugin-xgpush.xgpush", function(require, exports, module) {
-//https://github.com/apache/cordova-plugin-network-information/blob/master/www/network.js
-// https://github.com/katzer/cordova-plugin-local-notifications.git
-
 var exec = require('cordova/exec'),
   cordova = require('cordova'),
   channel = require('cordova/channel'),
@@ -35,13 +31,13 @@ function XGPush() {
   };
 
   this.registerPush = function(account,successCallback, errorCallback) {
-         exec(successCallback, errorCallback, "XGPush", "registerPush", [account]);
-       };
+    exec(successCallback, errorCallback, "XGPush", "registerPush", [account]);
+  };
 	   
   this.onEvent = function(event) {
-        console.log(handler);
-		handler(event);
-       };
+    console.log(handler);
+	handler(event);
+	};
 
    var me = this;
 
@@ -55,11 +51,8 @@ function XGPush() {
               utils.alert("[ERROR] Error initializing Cordova: " + e);
           });
 		  
-		  ecec(me.onEvent,null,"XGPush","onEvent",[]);
+		  exec(me.onEvent,null,"XGPush","onEvent",[]);
       });
 }
 
-
 module.exports = new XGPush();
-
-});
