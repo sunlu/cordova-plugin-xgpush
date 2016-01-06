@@ -4,10 +4,12 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import com.tencent.android.tpush.XGIOperateCallback;
+import com.tencent.android.tpush.XGLocalMessage;
 import com.tencent.android.tpush.XGPushClickedResult;
 import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushConstants;
@@ -30,55 +32,63 @@ public class XGPushPlugin extends CordovaPlugin {
     private XGPushReceiver receiver;
     private static final String TAG = "XGPushPlugin";
 
-    private final static List<String> methodList = Arrays.asList(
-            "registerPush",
-            "unregisterPush",
-            "setTag",
-            "deleteTag",
-            "addLocalNotification",
-            "setPushNotificationBuilder",
-            "enableDebug",
-            "getToken",
-            "setAccessId",
-            "setAccessKey");
-
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         context = cordova.getActivity().getApplicationContext();
+    }
 
-        receiver = new XGPushReceiver(cordova,webView);
+    @Override
+    public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {
+
+        LOG.d(TAG, "exec : action = " + action + ", callbackId = " + (callbackContext != null ? callbackContext.getCallbackId() : "null"));
+
+        if ("addListener".equals(action)) {
+            addListener(callbackContext);
+            return true;
+        } else if ("registerPush".equals(action)) {
+            registerPush(data, callbackContext);
+            return true;
+        } else if ("unRegisterPush".equals(action)) {
+            unRegisterPush(callbackContext);
+            return true;
+        } else if ("setTag".equals(action)) {
+            setTag(data, callbackContext);
+            return true;
+        } else if ("deleteTag".equals(action)) {
+            deleteTag(data, callbackContext);
+            return true;
+        } else if ("addLocalNotification".equals(action)) {
+            addLocalNotification(data, callbackContext);
+            return true;
+        } else if ("enableDebug".equals(action)) {
+            enableDebug(data, callbackContext);
+            return true;
+        } else if ("getToken".equals(action)) {
+            getToken(callbackContext);
+            return true;
+        } else if ("setAccessInfo".equals(action)) {
+            setAccessInfo(data, callbackContext);
+            return true;
+        }
+
+        Log.d(TAG, "> exec not action : action=" + action);
+
+        return false;
+    }
+
+    private void addListener(CallbackContext callbackContext) {
+        Log.d(TAG, "addListener : callbackId=" + callbackContext.getCallbackId());
+
+        XGPushReceiver receiver = new XGPushReceiver(callbackContext);
         IntentFilter filter = new IntentFilter();
         filter.addAction(XGPushConstants.ACTION_PUSH_MESSAGE);
         filter.addAction(XGPushConstants.ACTION_FEEDBACK);
         context.registerReceiver(receiver, filter);
+
+        receiver.onInitialize(context, cordova);
     }
 
-    @Override
-    public boolean execute(final String action, final JSONArray data, final CallbackContext callbackContext) throws JSONException {
-        Log.d(TAG, "> plugin invoke : action=" + action);
-
-        if (!methodList.contains(action)) {
-            return false;
-        }
-
-        cordova.getThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Method method = this.getClass().getDeclaredMethod(action, JSONArray.class, CallbackContext.class);
-                    method.invoke(this, data, callbackContext);
-                } catch (Exception e) {
-                    Log.e(TAG, e.toString());
-                }
-            }
-        });
-        return true;
-    }
-
-    /**
-     * fix for singletop
-     */
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -88,80 +98,123 @@ public class XGPushPlugin extends CordovaPlugin {
     @Override
     public void onResume(boolean multitasking) {
         super.onResume(multitasking);
-
-        XGPushClickedResult click = XGPushManager.onActivityStarted(this.cordova.getActivity());
-        Log.d(TAG, "onResumeXGPushClickedResult: multitasking = " + multitasking + ", Result = " + click);
-        if (click != null) {
-            receiver.onNotifactionClickedResult(context,click);
-        }
     }
 
     @Override
     public void onPause(boolean multitasking) {
         super.onPause(multitasking);
-        Log.d(TAG, "onActivityStoped : multitasking=" + multitasking);
+        //Log.d(TAG, "onActivityStoped : multitasking=" + multitasking);
         XGPushManager.onActivityStoped(this.cordova.getActivity());
     }
 
-    /////////////////////////////////////
-
-    protected void registerPush(JSONArray data, CallbackContext callback) throws JSONException {
-
-        String account = (data != null && data.length() > 0) ? data.getString(0) : null;
-
-        XGIOperateCallback reply = new XGPushCallback(callback);
-        if (TextUtils.isEmpty(account)) {
-            Log.d(TAG, "> register public");
-            XGPushManager.registerPush(context, reply);
-        } else {
-            Log.d(TAG, "> register private:" + account);
-            XGPushManager.registerPush(context, account, reply);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (receiver != null) {
+            context.unregisterReceiver(receiver);
         }
     }
 
+    /////////////////------API---------////////////////////
 
-    private void unregisterPush(JSONArray data, CallbackContext callback) {
-        XGPushManager.unregisterPush(context, new XGPushCallback(callback));
+    protected void registerPush(final JSONArray data, final CallbackContext callback) {
+
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String account = (data != null && data.length() > 0) ? data.getString(0) : null;
+                    XGIOperateCallback reply = new XGPushCallback(callback);
+
+                    if (TextUtils.isEmpty(account)) {
+                        Log.d(TAG, "> register public");
+                        XGPushManager.registerPush(context, reply);
+                    } else {
+                        Log.d(TAG, "> register private:" + account);
+                        XGPushManager.registerPush(context, account, reply);
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "register error:" + e.toString());
+                    callback.error(e.getMessage());
+                }
+            }
+        });
     }
 
-    private void setTag(JSONArray data, CallbackContext callback) throws JSONException {
 
-        XGPushManager.setTag(context, data.getString(0));
+    private void unRegisterPush(final CallbackContext callback) {
+        cordova.getThreadPool().execute(new Runnable() {
+            @Override
+            public void run() {
+                XGIOperateCallback reply = new XGPushCallback(callback);
+                XGPushManager.unregisterPush(context, reply);
+            }
+        });
     }
 
-    private void deleteTag(JSONArray data, CallbackContext callback) throws JSONException {
-        XGPushManager.deleteTag(context, data.getString(0));
+    private void setTag(JSONArray data, CallbackContext callback) {
+        try {
+            XGPushManager.setTag(context, data.getString(0));
+            callback.success();
+        } catch (Exception e) {
+            Log.e(TAG, "setTag error:" + e.toString());
+            callback.error(e.toString());
+        }
     }
 
-    private void addLocalNotification(JSONArray data, CallbackContext callback) throws JSONException {
-        //XGLocalMessage message = new XGLocalMessage();
-        //message.set
+    private void deleteTag(JSONArray data, CallbackContext callback) {
+        try {
+            XGPushManager.deleteTag(context, data.getString(0));
+            callback.success();
+        } catch (Exception e) {
+            Log.e(TAG, "deleteTag error:" + e.toString());
+            callback.error(e.toString());
+        }
     }
 
-    private void setPushNotificationBuilder(JSONArray data, CallbackContext callback) throws JSONException {
-        //XGLocalMessage message = new XGLocalMessage();
-        //message.set
+    private void addLocalNotification(JSONArray data, CallbackContext callback) {
+        try {
+            XGLocalMessage message = new XGLocalMessage();
+
+            message.setType(data.getInt(0));
+            message.setTitle(data.getString(1));
+            message.setContent(data.getString(2));
+
+            Long id = XGPushManager.addLocalNotification(context, message);
+
+            callback.success(id.toString());
+        } catch (Exception e) {
+            Log.e(TAG, "addLocalNotification error:" + e.toString());
+            callback.error(e.toString());
+        }
     }
 
-
-    private void enableDebug(JSONArray data, CallbackContext callback) throws JSONException {
-        boolean debugMode = data.getBoolean(0);
-        XGPushConfig.enableDebug(context, debugMode);
+    private void enableDebug(JSONArray data, CallbackContext callback) {
+        try {
+            boolean debugMode = data.getBoolean(0);
+            XGPushConfig.enableDebug(context, debugMode);
+            callback.success();
+        } catch (Exception e) {
+            Log.e(TAG, "enableDebug error:" + e.toString());
+            callback.error(e.toString());
+        }
     }
 
-    private void getToken(JSONArray data, CallbackContext callback) {
-
+    private void getToken(CallbackContext callback) {
         String token = XGPushConfig.getToken(context);
         callback.success(token);
     }
 
-    private void setAccessId(JSONArray data, CallbackContext callback) throws JSONException {
-        long id = data.getLong(0);
-        XGPushConfig.setAccessId(context, id);
-    }
-
-    private void setAccessKey(JSONArray data, CallbackContext callback) throws JSONException {
-        String key = data.getString(0);
-        XGPushConfig.setAccessKey(context, key);
+    private void setAccessInfo(JSONArray data, CallbackContext callback) {
+        try {
+            long id = data.getLong(0);
+            String key = data.getString(1);
+            XGPushConfig.setAccessId(context, id);
+            XGPushConfig.setAccessKey(context, key);
+            callback.success();
+        } catch (Exception e) {
+            Log.e(TAG, "setAccessInfo error:" + e.toString());
+            callback.error(e.toString());
+        }
     }
 }
