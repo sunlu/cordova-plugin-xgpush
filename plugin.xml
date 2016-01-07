@@ -93,9 +93,9 @@
       </dict>
     </config-file>
     <!-- Tencent XGPush SDK -->
-    <header-file src="sdk/ios/demo/sdk/XGPush.h" />
-    <header-file src="sdk/ios/demo/sdk/XGSetting.h" />
-    <source-file src="sdk/ios/demo/sdk/libXG-SDK.a" framework="true" />
+    <header-file src="sdk/ios/XGPush.h" />
+    <header-file src="sdk/ios/XGSetting.h" />
+    <source-file src="sdk/ios/libXG-SDK.a" framework="true" />
     <!-- Cordova Plugin -->
     <header-file src="src/ios/AppDelegate+CDVXGPush.h" />
     <source-file src="src/ios/AppDelegate+CDVXGPush.m" />
