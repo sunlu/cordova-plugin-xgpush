@@ -15,16 +15,12 @@ import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushConstants;
 import com.tencent.android.tpush.XGPushManager;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.util.Log;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
 
 public class XGPushPlugin extends CordovaPlugin {
 
@@ -46,29 +42,41 @@ public class XGPushPlugin extends CordovaPlugin {
         if ("addListener".equals(action)) {
             addListener(callbackContext);
             return true;
-        } else if ("registerPush".equals(action)) {
+        }
+        if ("registerPush".equals(action)) {
             registerPush(data, callbackContext);
             return true;
-        } else if ("unRegisterPush".equals(action)) {
+        }
+        if ("unRegisterPush".equals(action)) {
             unRegisterPush(callbackContext);
             return true;
-        } else if ("setTag".equals(action)) {
+        }
+        if ("setTag".equals(action)) {
             setTag(data, callbackContext);
             return true;
-        } else if ("deleteTag".equals(action)) {
+        }
+        if ("deleteTag".equals(action)) {
             deleteTag(data, callbackContext);
             return true;
-        } else if ("addLocalNotification".equals(action)) {
+        }
+        if ("addLocalNotification".equals(action)) {
             addLocalNotification(data, callbackContext);
             return true;
-        } else if ("enableDebug".equals(action)) {
+        }
+        if ("enableDebug".equals(action)) {
             enableDebug(data, callbackContext);
             return true;
-        } else if ("getToken".equals(action)) {
+        }
+        if ("getToken".equals(action)) {
             getToken(callbackContext);
             return true;
-        } else if ("setAccessInfo".equals(action)) {
+        }
+        if ("setAccessInfo".equals(action)) {
             setAccessInfo(data, callbackContext);
+            return true;
+        }
+        if("getLaunchInfo".equals(action)){
+            getLaunchInfo(callbackContext);
             return true;
         }
 
@@ -85,8 +93,6 @@ public class XGPushPlugin extends CordovaPlugin {
         filter.addAction(XGPushConstants.ACTION_PUSH_MESSAGE);
         filter.addAction(XGPushConstants.ACTION_FEEDBACK);
         context.registerReceiver(receiver, filter);
-
-        receiver.onInitialize(context, cordova);
     }
 
     @Override
@@ -97,7 +103,12 @@ public class XGPushPlugin extends CordovaPlugin {
 
     @Override
     public void onResume(boolean multitasking) {
+
         super.onResume(multitasking);
+
+        //if(receiver != null){
+        //    receiver.onResume(context, cordova);
+        //}
     }
 
     @Override
@@ -117,7 +128,7 @@ public class XGPushPlugin extends CordovaPlugin {
 
     /////////////////------API---------////////////////////
 
-    protected void registerPush(final JSONArray data, final CallbackContext callback) {
+    private void registerPush(final JSONArray data, final CallbackContext callback) {
 
         cordova.getThreadPool().execute(new Runnable() {
             @Override
@@ -216,5 +227,10 @@ public class XGPushPlugin extends CordovaPlugin {
             Log.e(TAG, "setAccessInfo error:" + e.toString());
             callback.error(e.toString());
         }
+    }
+
+    private void getLaunchInfo(CallbackContext callback){
+        XGPushClickedResult click = XGPushManager.onActivityStarted(cordova.getActivity());
+        callback.success(XGPushReceiver.convertClickedResult(click));
     }
 }

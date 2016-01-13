@@ -140,7 +140,7 @@ static NSDictionary *_luanchOptions=nil;
 
 - (void) sendMessage:(NSString*) type data:(NSDictionary*)dict;{
     if(self.callbackId  != nil){
-        NSMutableDictionary* newDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:type,@"eventType",nil];
+        NSMutableDictionary* newDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:type,@"type",nil];
         [newDict addEntriesFromDictionary:dict];
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:newDict];
         [result setKeepCallback:[NSNumber numberWithBool:YES]];

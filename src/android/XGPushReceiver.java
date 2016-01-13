@@ -2,7 +2,6 @@ package net.sunlu.xgpush;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,9 +26,10 @@ public class XGPushReceiver extends XGPushBaseReceiver {
         this.callback = callback;
     }
 
-    public void onInitialize(Context context, CordovaInterface cordova) {
+    public void onResume(Context context, CordovaInterface cordova){
         XGPushClickedResult click = XGPushManager.onActivityStarted(cordova.getActivity());
-        Log.d(TAG, "onInitialize: Result = " + click);
+        Log.d(TAG, "onResume: ClickedResult = " + click);
+
         if (click != null) {
             onNotifactionClickedResult(context, click);
         }
@@ -39,12 +39,12 @@ public class XGPushReceiver extends XGPushBaseReceiver {
     public void onTextMessage(Context context, XGPushTextMessage message) {
         JSONObject data = new JSONObject();
         try {
-            data.put("eventType", "message");
+            data.put("type", "message");
             data.put("content", message.getContent());
             data.put("title", message.getTitle());
             data.put("customContent", message.getCustomContent());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "onTextMessage", e);
         }
         sendMessage(data);
     }
@@ -56,7 +56,7 @@ public class XGPushReceiver extends XGPushBaseReceiver {
 
         JSONObject data = new JSONObject();
         try {
-            data.put("eventType", "register");
+            data.put("type", "register");
             data.put("accessId", message.getAccessId());
             data.put("account", message.getAccount());
             data.put("deviceId", message.getDeviceId());
@@ -64,7 +64,7 @@ public class XGPushReceiver extends XGPushBaseReceiver {
             data.put("ticketType", message.getTicketType());
             data.put("token", message.getToken());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "onRegisterResult", e);
         }
         sendMessage(data);
     }
@@ -73,10 +73,10 @@ public class XGPushReceiver extends XGPushBaseReceiver {
     public void onUnregisterResult(Context context, int errorCode) {
         JSONObject data = new JSONObject();
         try {
-            data.put("eventType", "unregister");
+            data.put("type", "unregister");
             data.put("errorCode", errorCode);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "onUnregisterResult", e);
         }
         sendMessage(data);
     }
@@ -85,11 +85,11 @@ public class XGPushReceiver extends XGPushBaseReceiver {
     public void onDeleteTagResult(Context context, int errorCode, String tagName) {
         JSONObject data = new JSONObject();
         try {
-            data.put("eventType", "deleteTag");
+            data.put("type", "deleteTag");
             data.put("errorCode", errorCode);
             data.put("tagName", tagName);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "onDeleteTagResult", e);
         }
         sendMessage(data);
     }
@@ -98,38 +98,25 @@ public class XGPushReceiver extends XGPushBaseReceiver {
     public void onSetTagResult(Context context, int errorCode, String tagName) {
         JSONObject data = new JSONObject();
         try {
-            data.put("eventType", "setTag");
+            data.put("type", "setTag");
             data.put("errorCode", errorCode);
             data.put("tagName", tagName);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "onSetTagResult", e);
         }
         sendMessage(data);
     }
 
     @Override
     public void onNotifactionClickedResult(Context context, XGPushClickedResult message) {
-        JSONObject data = new JSONObject();
-        try {
-            data.put("eventType", "click");
-            data.put("actionType", message.getActionType());
-            data.put("content", message.getContent());
-            data.put("title", message.getTitle());
-            data.put("customContent", message.getCustomContent());
-            data.put("msgId", message.getMsgId());
-            data.put("activityName", message.getActivityName());
-            data.put("notificationActionType", message.getNotificationActionType());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        sendMessage(data);
+        sendMessage(convertClickedResult(message));
     }
 
     @Override
     public void onNotifactionShowedResult(Context context, XGPushShowedResult message) {
         JSONObject data = new JSONObject();
         try {
-            data.put("eventType", "show");
+            data.put("type", "show");
             data.put("activity", message.getActivity());
             data.put("content", message.getContent());
             data.put("title", message.getTitle());
@@ -138,7 +125,7 @@ public class XGPushReceiver extends XGPushBaseReceiver {
             data.put("notifactionId", message.getNotifactionId());
             data.put("notificationActionType", message.getNotificationActionType());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "onNotifactionShowedResult", e);
         }
         sendMessage(data);
     }
@@ -147,5 +134,27 @@ public class XGPushReceiver extends XGPushBaseReceiver {
         PluginResult results = new PluginResult(PluginResult.Status.OK, data);
         results.setKeepCallback(true);
         callback.sendPluginResult(results);
+    }
+
+    public static JSONObject convertClickedResult(XGPushClickedResult message){
+        JSONObject data = new JSONObject();
+
+        if(message == null)
+            return data;
+
+        try {
+            data.put("type", "click");
+            data.put("actionType", message.getActionType());
+            data.put("content", message.getContent());
+            data.put("title", message.getTitle());
+            data.put("customContent", message.getCustomContent());
+            data.put("msgId", message.getMsgId());
+            data.put("activityName", message.getActivityName());
+            data.put("notificationActionType", message.getNotificationActionType());
+        } catch (JSONException e) {
+            Log.e(TAG, "convertClickedResult Error", e);
+        }
+
+        return data;
     }
 }
