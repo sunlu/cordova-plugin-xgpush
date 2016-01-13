@@ -13,6 +13,22 @@ ios     | Xg-Push-SDK-iOS-2.4.5.xcode6.4
 cordova plugin add https://github.com/sunlu/cordova-plugin-xgpush --save \
 --variable ACCESS_ID="Your ID"  --variable ACCESS_KEY="Your Key"
 ```
+## 示例
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {
+            xgpush.on("register", function (data) {
+                console.log("register:", data);
+            });
+
+            xgpush.on("click", function (data) {
+                alert("click:" + JSON.stringify(data));
+            });
+
+            xgpush.getLaunchInfo(function (data) {
+                alert("getLaunchInfo：" + JSON.stringify(data));
+            }); 
+      }
 
 ## API
 
