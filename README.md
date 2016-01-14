@@ -14,6 +14,7 @@ cordova plugin add https://github.com/sunlu/cordova-plugin-xgpush --save \
 --variable ACCESS_ID="Your ID"  --variable ACCESS_KEY="Your Key"
 ```
 ## 示例
+```js
       document.addEventListener("deviceready", onDeviceReady, false);
 
       function onDeviceReady() {
@@ -29,7 +30,7 @@ cordova plugin add https://github.com/sunlu/cordova-plugin-xgpush --save \
                 alert("getLaunchInfo：" + JSON.stringify(data));
             }); 
       }
-
+```
 ## API
 
 ### 方法
@@ -47,8 +48,9 @@ setAccessInfo(accessId,accessKey)   | 设置访问ID，KEY  |
 getLaunchInfo(success)              | app启动自定义参数|
 
 调用例子
+```js
       xgpush.registerPush("account",function(event){},function(event){});
-
+```
 ### 事件
 
 事件        |  事件名             |  参数说明                  
@@ -60,7 +62,8 @@ click       | 通知被点击          |
 show        | 通知成功显示        |
 deleteTag   | 删除标签事件        |
 setTag      | 设计标签事件        |
-
+```js
         xgpush.on("click",function(data){
           console.log(data);
         });
+```
