@@ -10,6 +10,8 @@
    
   <preference name="ACCESS_ID" />
   <preference name="ACCESS_KEY" />
+  <preference name="IOS_ACCESS_ID" />
+  <preference name="IOS_ACCESS_KEY" />
   
   <js-module name="xgpush" src="www/xgpush.js">
     <clobbers target="xgpush" />
@@ -89,9 +91,9 @@
     <config-file target="*-Info.plist" parent="XGPushMeta">
       <dict>
         <key>AccessID</key>
-        <integer>$ACCESS_ID</integer>
+        <integer>$IOS_ACCESS_ID</integer>
         <key>AccessKey</key>
-        <string>$ACCESS_KEY</string>
+        <string>$IOS_ACCESS_KEY</string>
       </dict>
     </config-file>
     <!-- Tencent XGPush SDK -->
