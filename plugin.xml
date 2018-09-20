@@ -29,40 +29,52 @@
       <uses-permission android:name="android.permission.READ_PHONE_STATE" />
       <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-      <uses-permission android:name="android.permission.RESTART_PACKAGES" />
-      <uses-permission android:name="android.permission.BROADCAST_STICKY" />
-      <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-      <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
-      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
       <uses-permission android:name="android.permission.WAKE_LOCK" />
-      <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
-      <uses-permission android:name="android.permission.GET_TASKS" />
-      <uses-permission android:name="android.permission.READ_LOGS" />
       <uses-permission android:name="android.permission.VIBRATE" />
+      <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+      <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+      <uses-permission android:name="com.meizu.flyme.push.permission.RECEIVE"></uses-permission>
+      <permission android:name="$PACKAGE_NAME.push.permission.MESSAGE" android:protectionLevel="signature"/>
+      <uses-permission android:name="$PACKAGE_NAME.push.permission.MESSAGE"></uses-permission>
+      <permission
+          android:name="$PACKAGE_NAME.permission.MIPUSH_RECEIVE"
+          android:protectionLevel="signature" />
+      <uses-permission android:name="$PACKAGE_NAME.permission.MIPUSH_RECEIVE" />
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <receiver android:name="com.tencent.android.tpush.XGPushReceiver" android:process=":xg_service_v2">
-        <intent-filter android:priority="0x7fffffff">
-          <action android:name="com.tencent.android.tpush.action.SDK" />
-          <action android:name="com.tencent.android.tpush.action.INTERNAL_PUSH_MESSAGE" />
-          <action android:name="android.intent.action.USER_PRESENT" />
-          <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-        </intent-filter>
-      </receiver>
-      <activity android:name="com.tencent.android.tpush.XGPushActivity" android:theme="@android:style/Theme.Translucent"
-      android:exported="false">
-        <intent-filter>
-          <action android:name="android.intent.action" />
-        </intent-filter>
-      </activity>
-      <service android:name="com.tencent.android.tpush.service.XGPushService" android:exported="true" android:persistent="true"
-      android:process=":xg_service_v2"></service>
-      <service android:name="com.tencent.android.tpush.rpc.XGRemoteService" android:exported="true">
-        <intent-filter>
-          <action android:name="$PACKAGE_NAME.PUSH_ACTION" />
-        </intent-filter>
-      </service>
+        <receiver android:name="com.tencent.android.tpush.XGPushReceiver" android:process=":xg_service_v4" >
+          <intent-filter android:priority="0x7fffffff" >
+            <action android:name="com.tencent.android.tpush.action.SDK" />
+            <action android:name="com.tencent.android.tpush.action.INTERNAL_PUSH_MESSAGE" />
+            <action android:name="android.intent.action.USER_PRESENT" />
+            <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+            <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+            <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+          </intent-filter>
+        </receiver>
+
+        <activity android:name="com.tencent.android.tpush.XGPushActivity" android:theme="@android:style/Theme.Translucent"
+        android:exported="false">
+          <intent-filter>
+            <action android:name="android.intent.action" />
+          </intent-filter>
+        </activity>
+        <service android:name="com.tencent.android.tpush.service.XGPushServiceV4" android:exported="true" android:persistent="true" android:process=":xg_service_v4" />
+        <service android:name="com.tencent.android.tpush.rpc.XGRemoteService" android:exported="true">
+          <intent-filter>
+            <action android:name="$PACKAGE_NAME.PUSH_ACTION" />
+          </intent-filter>
+        </service>
+      <provider android:name="com.tencent.android.tpush.XGPushProvider" android:authorities="$PACKAGE_NAME.AUTH_XGPUSH" android:exported="true"/>
+      <provider android:name="com.tencent.android.tpush.SettingsContentProvider" android:authorities="$PACKAGE_NAME.TPUSH_PROVIDER" android:exported="false" />
+      <provider android:name="com.tencent.mid.api.MidProvider" android:authorities="$PACKAGE_NAME.TENCENT.MID.V3" android:exported="true" />
+      <!-- 厂商平台 -->
+
+        <!--厂商平台 END-->
       <meta-data android:name="XG_V2_ACCESS_ID" android:value="$ACCESS_ID"></meta-data>
       <meta-data android:name="XG_V2_ACCESS_KEY" android:value="$ACCESS_KEY"></meta-data>
     </config-file>
@@ -72,13 +84,13 @@
     <!-- Tencent XGPush SDK  -->
     <source-file src="sdk/android/libs/android-support-v4.jar" target-dir="libs" />
     <source-file src="sdk/android/libs/jg_filter_sdk_1.1.jar" target-dir="libs" />
-    <source-file src="sdk/android/libs/Xg_sdk_v3.1_20170417_0946.jar" target-dir="libs" />
+    <source-file src="sdk/android/libs/XgOtherPush.jar" target-dir="libs" />
     <source-file src="sdk/android/libs/wup-1.0.0.E-SNAPSHOT.jar" target-dir="libs" />
+    <source-file src="sdk/android/libs/Xg_sdk_4.2.0_20180911_1920.jar" target-dir="libs" />
+    <source-file src="sdk/android/libs/mid-core-sdk-4.0.7.jar" target-dir="libs" />
 	
-    <source-file src="sdk/android/Other-Platform-SO/armeabi/libxguardian.so" target-dir="libs/armeabi" />
-    <source-file src="sdk/android/Other-Platform-SO/armeabi/libtpnsSecurity.so" target-dir="libs/armeabi" />
-    <source-file src="sdk/android/Other-Platform-SO/armeabi-v7a/libtpnsSecurity.so" target-dir="libs/armeabi-v7a" />
-    <source-file src="sdk/android/Other-Platform-SO/armeabi-v7a/libxguardian.so" target-dir="libs/armeabi-v7a" />
+    <source-file src="sdk/android/libs/armeabi/libxguardian.so" target-dir="libs/armeabi" />
+    <source-file src="sdk/android/libs/armeabi/libtpnsSecurity.so" target-dir="libs/armeabi" />
   </platform>
   <!-- ios -->
   <platform name="ios">
