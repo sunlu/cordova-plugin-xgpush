@@ -74,7 +74,7 @@
       <provider android:name="com.tencent.mid.api.MidProvider" android:authorities="$PACKAGE_NAME.TENCENT.MID.V3" android:exported="true" />
       <!-- 厂商平台 -->
 
-        <!--厂商平台 END-->
+      <!--厂商平台 END-->
       <meta-data android:name="XG_V2_ACCESS_ID" android:value="$ACCESS_ID"></meta-data>
       <meta-data android:name="XG_V2_ACCESS_KEY" android:value="$ACCESS_KEY"></meta-data>
     </config-file>

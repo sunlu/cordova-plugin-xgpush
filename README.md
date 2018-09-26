@@ -1,22 +1,33 @@
 # 腾讯信鸽推送 for Cordova
-
+***本次升级我只验证了部分功能，如果有其他功能不可用，请提交issue。***
 SDK     | version
 ------- | --------------------------------
-android | Xg-Push-SDK-Android-4.2.0
-ios     | Xg-Push-SDK-iOS-2.4.6.xcode6.4
+android | 4.2.0
+ios     | 3.3.1
 
 ## 安装方法
 
 打开控制台，进入 Cordova 项目目录，输入：
 
 ```bash
-cordova plugin add https://github.com/huangliop/cordova-plugin-xgpush-hl.git --save --variable ACCESS_ID="Your ANDROID ID" --variable ACCESS_KEY="Your ANDROID Key" --variable IOS_ACCESS_ID="Your ID" --variable IOS_ACCESS_KEY="Your Key" 
+cordova plugin add https://github.com/huangliop/cordova-plugin-xgpush-hl.git --variable ACCESS_ID="Your ANDROID ID" --variable ACCESS_KEY="Your ANDROID Key" --variable IOS_ACCESS_ID="Your ID" --variable IOS_ACCESS_KEY="Your Key" 
 ```
+## iOS 特别处理
+
+iOS版本需要在xCode里面手动开启，[Push Notifications]和[Background Modes]。方法如下
+[http://xg.qq.com/docs/ios_access/ios_access_guide.html](http://xg.qq.com/docs/ios_access/ios_access_guide.html)
+
 ## 示例
 ```js
       document.addEventListener("deviceready", onDeviceReady, false);
 
       function onDeviceReady() {
+            xgpush.registerPush('account',function(s){
+                console.log(s)
+            },function(e){
+                console.log(e)
+            })
+
             xgpush.on("register", function (data) {
                 console.log("register:", data);
             });
@@ -50,7 +61,7 @@ getLaunchInfo(success)              | app启动自定义参数|
 ```js
       xgpush.registerPush("account",function(event){},function(event){});
 ```
-### 事件
+### 事件 Event
 
 事件        |  事件名             |  参数说明                  
 ------------|---------------------|------------------------------------------
