@@ -1,5 +1,7 @@
 # 腾讯信鸽推送 for Cordova
+
 ***本次升级我只验证了部分功能，如果有其他功能不可用，请提交issue。***
+
 SDK     | version
 ------- | --------------------------------
 android | 4.2.0
@@ -45,17 +47,17 @@ iOS版本需要在xCode里面手动开启，[Push Notifications]和[Background M
 
 ### 方法
 
-方法                                | 方法名           | 参数说明 
-------------------------------------|------------------|---------------------------------------------------
-registerPush(account,success,error) | 绑定账号注册     | account：绑定的账号，绑定后可以针对账号发送推送消息
-unRegisterPush(success,error)       | 反注册           |
-setTag(tagName,success,error)       | 设置标签         | tagName：待设置的标签名称
-deleteTag(tagName,success,error)    | 删除标签         | tagName：待设置的标签名称
+方法                                | 方法名           | 参数说明 |成功回调|失败回调
+------------------------------------|------------------|---------------------------------------------------|--------|--------
+registerPush(account,success,error) | 绑定账号注册     | account：绑定的账号，绑定后可以针对账号发送推送消息|{data:"设备的token"}|{data:"",code:"",message:""} //android Only
+unRegisterPush(account,success,error)       | 反注册           |account：绑定的账号|{flag:0}|{flag:0}
+setTag(tagName)       | 设置标签         | tagName：待设置的标签名称
+deleteTag(tagName)    | 删除标签         | tagName：待设置的标签名称
 addLocalNotification(type,title,content,success,error) | 添加本地通知| type:1通知，2消息 title:标题 content:内容
 enableDebug(debugMode,success,error)| 开启调试模式     |  debugMode：默认为false。如果要开启debug日志，设为true
-getToken(callback)                  |  获取设备Token   |
+getToken(callback)                  |  获取设备Token   |回调|设备的token|
 setAccessInfo(accessId,accessKey)   | 设置访问ID，KEY  |
-getLaunchInfo(success)              | app启动自定义参数|
+getLaunchInfo(success)              | app启动自定义参数| |返回的数据与click事件返回的一样
 
 调用例子
 ```js
@@ -63,7 +65,7 @@ getLaunchInfo(success)              | app启动自定义参数|
 ```
 ### 事件 Event
 
-事件        |  事件名             |  参数说明                  
+事件        |  事件名             |                
 ------------|---------------------|------------------------------------------
 register    |  注册账号事件       | 
 unRegister  | 反注册事件          |
@@ -75,5 +77,16 @@ setTag      | 设计标签事件        |
 ```js
         xgpush.on("click",function(data){
           console.log(data);
+          /**
+           * {
+           *   activity:"com.changan.test.push.MainActivity",
+           * content:"这是内容",
+           * customContent:"{"vvva":"789"}",
+           * msgId:101217419,
+           * notifactionId:0,
+           * notificationActionType:1,title:"测试推送",
+           * type:"show"
+           * }
+        **/
         });
 ```
