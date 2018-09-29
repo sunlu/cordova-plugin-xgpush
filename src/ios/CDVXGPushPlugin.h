@@ -2,9 +2,7 @@
 #import <Foundation/Foundation.h>
 
 #import "XGPush.h"
-#import "XGSetting.h"
 
-#define kXGPushPluginReceiveNotification @"XGPushPluginReceiveNofication"
 
 typedef void (^CallbackBlock) (void);
 
@@ -16,18 +14,13 @@ typedef void (^CallbackBlock) (void);
 /*
  notification
  */
-- (void) registerNotificationForIOS7;
-- (void) registerNotificationForIOS8;
-- (void) registerNotification;
 
 /*
  plugin
  */
 - (void) startApp:(uint32_t)assessId key:(NSString*) accessKey;
 
-- (void) didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken;
 - (void) didFailToRegisterForRemoteNotificationsWithError:(NSError*)err;
-- (void) didReceiveRemoteNotification:(NSDictionary*)userInfo;
 
 - (void) sendMessage:(NSString*) type data:(NSDictionary*)dict;
 
@@ -45,7 +38,7 @@ typedef void (^CallbackBlock) (void);
 - (void) getToken:(CDVInvokedUrlCommand*)command;
 - (void) setAccessInfo:(CDVInvokedUrlCommand*)command;
 
-@property NSData* deviceToken;
+@property NSString* deviceToken;
 @property (nonatomic, copy) NSString* callbackId;
 
 @end

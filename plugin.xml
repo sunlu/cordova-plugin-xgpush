@@ -109,8 +109,7 @@
       </dict>
     </config-file>
     <!-- Tencent XGPush SDK -->
-    <header-file src="sdk/ios/XGPush.h" />
-    <header-file src="sdk/ios/XGSetting.h" />
+    <header-file src="sdk/ios/XGPush.h" /> 
     <source-file src="sdk/ios/libXG-SDK.a" framework="true" />
     <!-- Cordova Plugin -->
     <header-file src="src/ios/AppDelegate+CDVXGPush.h" />
@@ -118,11 +117,10 @@
     <header-file src="src/ios/CDVXGPushPlugin.h" />
     <source-file src="src/ios/CDVXGPushPlugin.m" />
     <!-- Dependencies -->
-    <framework src="libz.dylib" />
-    <framework src="libsqlite3.dylib" />
-    <framework src="CFNetwork.framework" />
+    <framework src="libz.tbd" />
+    <framework src="libsqlite3.0.tbd" />
     <framework src="SystemConfiguration.framework" />
     <framework src="CoreTelephony.framework" />
-    <framework src="Security.framework" />
+    <framework src="UserNotifications.framework" />
   </platform>
 </plugin>

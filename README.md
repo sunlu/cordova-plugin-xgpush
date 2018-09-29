@@ -1,6 +1,6 @@
 # 腾讯信鸽推送 for Cordova
 
-***本次升级我只验证了部分功能，如果有其他功能不可用，请提交issue。***
+***本次升级我只验证了click事件和getLaunchInfo功能，如果有其他功能不可用，请提交issue。***
 
 SDK     | version
 ------- | --------------------------------
@@ -79,12 +79,14 @@ setTag      | 设计标签事件        |
           console.log(data);
           /**
            * {
-           *   activity:"com.changan.test.push.MainActivity",
+           *   activity:"com.changan.test.push.MainActivity", //android Only
            * content:"这是内容",
            * customContent:"{"vvva":"789"}",
            * msgId:101217419,
-           * notifactionId:0,
-           * notificationActionType:1,title:"测试推送",
+           * notifactionId:0,   //android Only
+           * notificationActionType:1, // android Only
+           * title:"测试推送",
+           * subtitle:"副标题", //iOS Only
            * type:"show"
            * }
         **/
