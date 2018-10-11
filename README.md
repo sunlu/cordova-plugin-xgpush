@@ -51,7 +51,7 @@ iOS版本需要在xCode里面手动开启，[Push Notifications]和[Background M
 
 ### 方法
 
-方法                                | 方法名           | 参数说明 |成功回调|失败回调
+方法|方法名|参数说明|成功回调|失败回调
 ------------------------------------|------------------|---------------------------------------------------|--------|--------
 registerPush(account,success,error) | 绑定账号注册     | account：绑定的账号，绑定后可以针对账号发送推送消息|{data:"设备的token"}|{data:"",code:"",message:""} //android Only
 unRegisterPush(account,success,error)       | 反注册           |account：绑定的账号|{flag:0}|{flag:0}
@@ -67,6 +67,7 @@ getLaunchInfo(success)              | app启动自定义参数| |返回的数据
 ```js
       xgpush.registerPush("account",function(event){},function(event){});
 ```
+
 ### 事件 Event
 
 事件        |  事件名             |                
@@ -78,6 +79,7 @@ click       | 通知被点击          |
 show        | 通知成功显示        |
 deleteTag   | 删除标签事件        |
 setTag      | 设计标签事件        |
+
 ```js
         xgpush.on("click",function(data){
           console.log(data);
