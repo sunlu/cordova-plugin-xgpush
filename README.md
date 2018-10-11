@@ -1,6 +1,10 @@
 # 腾讯信鸽推送 for Cordova
 
-***本次升级我只验证了click事件和getLaunchInfo功能，如果有其他功能不可用，请提交issue。***
+**Android 已修改为Gradle打包方式。build的时候可能会拉不下来，请百度‘jcenter 慢’解决**
+
+**Android 暂时没有支持第三方渠道**
+
+**本次升级我只验证了click事件和getLaunchInfo功能，如果有其他功能不可用，请提交issue。**
 
 SDK     | version
 ------- | --------------------------------
