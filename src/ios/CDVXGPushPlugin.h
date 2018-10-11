@@ -1,13 +1,11 @@
-#import <Cordova/CDV.h>
-#import <Foundation/Foundation.h>
+#import <Cordova/CDVPlugin.h>
 
 #import "XGPush.h"
 
 
 typedef void (^CallbackBlock) (void);
 
-@interface CDVXGPushPlugin: CDVPlugin{
-}
+@interface CDVXGPushPlugin: CDVPlugin
 
 +(void)setLaunchOptions:(NSDictionary *)theLaunchOptions;
 

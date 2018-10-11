@@ -1,5 +1,5 @@
 #import "CDVXGPushPlugin.h"
-#import "XGPush.h"
+#import <Cordova/CDVPlugin.h>
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 #import <UserNotifications/UserNotifications.h>
