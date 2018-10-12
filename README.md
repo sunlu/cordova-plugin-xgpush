@@ -62,7 +62,7 @@ enableDebug(debugMode,success,error)| 开启调试模式     |  debugMode：默�
 getToken(callback)                  |  获取设备Token   |回调|设备的token|
 setAccessInfo(accessId,accessKey)   | 设置访问ID，KEY  |
 getLaunchInfo(success)              | app启动自定义参数| |返回的数据与click事件返回的一样
-stopNotification()|终止信鸽推送服务以后，将无法通过信鸽推送服务向设备推送消息。再次启动app（即初始化插件）就会重新接收推送||
+stopNotification()|终止信鸽推送服务以后，将无法通过信鸽推送服务向设备推送消息。再次启动app（即初始化插件）就会重新接收推送|iOS noly|
 
 调用例子
 ```js
