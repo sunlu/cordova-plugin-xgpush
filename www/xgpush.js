@@ -66,6 +66,10 @@ function XGPush() {
     this.setAccessInfo = function (accessId, accessKey, successCallback, errorCallback) {
         exec(successCallback, errorCallback, "XGPush", "setAccessInfo", [accessId, accessKey]);
     };
+    
+    this.stopNotification = function () {
+        exec(null, null, "XGPush", "stopNotification", []);
+    };
 
     channel.onCordovaReady.subscribe(function () {
         exec(
