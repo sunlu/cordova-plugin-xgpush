@@ -38,10 +38,11 @@ static CDVInvokedUrlCommand *currentCommand=nil;
  */
 - (void) pluginInitialize {
  
+    [XGPushTokenManager defaultTokenManager].delegate = self;
     uint32_t accessId = [[[[NSBundle mainBundle] objectForInfoDictionaryKey:@"XGPushMeta"] valueForKey:@"AccessID"] intValue];
     NSString* accessKey = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"XGPushMeta"] valueForKey:@"AccessKey"];
-    
     [self startApp:accessId key:accessKey];
+    
 }
 
 
@@ -59,7 +60,7 @@ static CDVInvokedUrlCommand *currentCommand=nil;
     
     [[XGPush defaultManager] startXGWithAppID:assessId appKey:accessKey delegate:self ];
     [[XGPush defaultManager] setXgApplicationBadgeNumber:0];
-
+    
 }
 
 
@@ -87,7 +88,7 @@ static CDVInvokedUrlCommand *currentCommand=nil;
 - (void) registerPush:(CDVInvokedUrlCommand*)command {
     NSString* account = [command.arguments objectAtIndex:0];
     currentCommand=command;
-    NSLog(@"[XGPushPlugin] registerPush: account = %@, token = %@", account, self.deviceToken);
+    NSLog(@"[XGPushPlugin] registerPush: account = %@, token = %@", account,[[XGPushTokenManager defaultTokenManager] deviceTokenString]);
     
     if ([account respondsToSelector:@selector(length)] && [account length] > 0) {
         NSLog(@"[XGPushPlugin] set account:%@", account);
@@ -172,23 +173,30 @@ static CDVInvokedUrlCommand *currentCommand=nil;
     [self startApp:accessId key:accessKey];
 }
 
-- (void) sendCallback:(NSError*) error{
+- (void) sendCallbackWithResult:(CDVPluginResult*) result{
     if(currentCommand==nil) return;
-    if (error==nil) {
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:result callbackId:currentCommand.callbackId];
-    } else {
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    if (result!=nil) {
         [self.commandDelegate sendPluginResult:result callbackId:currentCommand.callbackId];
     }
+    currentCommand=nil;
+}
+- (void) sendCallback:(NSError*) error{
+    if (error==nil) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self sendCallbackWithResult:result];
+    } else {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        [self sendCallbackWithResult:result];
+    }
+}
+
+- (void)stopNotification:(CDVInvokedUrlCommand*)command{
+    [[XGPush defaultManager] stopXGNotification];
 }
 
 #pragma mark - XGPushDelegate
 - (void)xgPushDidFinishStart:(BOOL)isSuccess error:(NSError *)error {
     NSLog(@"%s, result %@, error %@", __FUNCTION__, isSuccess?@"OK":@"NO", error);
-    if(isSuccess){
-        self.deviceToken=[[XGPushTokenManager defaultTokenManager] deviceTokenString];
-    }
      [self sendCallback:error] ;
 }
 
@@ -201,7 +209,6 @@ static CDVInvokedUrlCommand *currentCommand=nil;
 }
 - (void)xgPushDidRegisteredDeviceToken:(NSString *)deviceToken error:(NSError *)error{
     NSLog(@"%s, result %@, error %@", __FUNCTION__, error?@"NO":@"OK", error);
-    self.deviceToken=deviceToken;
 }
 // iOS 10 新增 API
 // iOS 10 会走新 API, iOS 10 以前会走到老 API
@@ -264,7 +271,15 @@ static CDVInvokedUrlCommand *currentCommand=nil;
 - (void)xgPushDidBindWithIdentifier:(NSString *)identifier type:(XGPushTokenBindType)type error:(NSError *)error {
     
     NSLog(@"%s, id is %@, error %@", __FUNCTION__, identifier, error);
-    [self sendCallback:error];
+    if(error==nil){
+        NSDictionary* data=@{
+                             @"data":[[XGPushTokenManager defaultTokenManager] deviceTokenString]
+                             };
+        CDVPluginResult* result=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:data];
+        [self sendCallbackWithResult:result];
+    }else{
+       [self sendCallback:error];
+    }
 }
 
 - (void)xgPushDidUnbindWithIdentifier:(NSString *)identifier type:(XGPushTokenBindType)type error:(NSError *)error{

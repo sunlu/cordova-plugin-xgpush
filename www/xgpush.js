@@ -1,6 +1,6 @@
-var exec = require('cordova/exec')
-var channel = require('cordova/channel')
-var utils = require('cordova/utils')
+var exec = require('cordova/exec'),
+    channel = require('cordova/channel'),
+    utils = require('cordova/utils');
 
 channel.createSticky('onCordovaXGPushReady');
 channel.waitForInitialization('onCordovaXGPushReady');

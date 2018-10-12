@@ -35,8 +35,8 @@ typedef void (^CallbackBlock) (void);
 - (void) enableDebug:(CDVInvokedUrlCommand*)command;
 - (void) getToken:(CDVInvokedUrlCommand*)command;
 - (void) setAccessInfo:(CDVInvokedUrlCommand*)command;
+- (void) stopNotification:(CDVInvokedUrlCommand*)command;
 
-@property NSString* deviceToken;
 @property (nonatomic, copy) NSString* callbackId;
 
 @end
