@@ -157,8 +157,7 @@ public class XGPushPlugin extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
             @Override
             public void run() {
-                XGIOperateCallback reply = new XGPushCallback(callback);
-                XGPushManager.unregisterPush(context, reply);
+                XGPushManager.unregisterPush(context);
             }
         });
     }

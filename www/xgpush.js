@@ -1,7 +1,6 @@
 var exec = require('cordova/exec'),
-  cordova = require('cordova'),
-  channel = require('cordova/channel'),
-  utils = require('cordova/utils');
+    channel = require('cordova/channel'),
+    utils = require('cordova/utils');
 
 channel.createSticky('onCordovaXGPushReady');
 channel.waitForInitialization('onCordovaXGPushReady');
@@ -40,12 +39,12 @@ function XGPush() {
         exec(successCallback, errorCallback, "XGPush", "unRegisterPush", []);
     };
 
-    this.setTag = function (tagName, successCallback, errorCallback) {
-        exec(successCallback, errorCallback, "XGPush", "setTag", [tagName]);
+    this.setTag = function (tagName) {
+        exec(null,null, "XGPush", "setTag", [tagName]);
     };
 
-    this.deleteTag = function (tagName, successCallback, errorCallback) {
-        exec(successCallback, errorCallback, "XGPush", "deleteTag", [tagName]);
+    this.deleteTag = function (tagName) {
+        exec(null, null, "XGPush", "deleteTag", [tagName]);
     };
 
     this.addLocalNotification = function (type, title, content, successCallback, errorCallback) {
@@ -67,6 +66,10 @@ function XGPush() {
     this.setAccessInfo = function (accessId, accessKey, successCallback, errorCallback) {
         exec(successCallback, errorCallback, "XGPush", "setAccessInfo", [accessId, accessKey]);
     };
+    
+    this.stopNotification = function () {
+        exec(null, null, "XGPush", "stopNotification", []);
+    };
 
     channel.onCordovaReady.subscribe(function () {
         exec(
@@ -83,7 +86,8 @@ function XGPush() {
             console.log("[XGPush] RegisterPush: ", info);
             channel.onCordovaXGPushReady.fire();
         }, function (e) {
-            utils.alert("[ERROR] RegisterPush: ", e);
+            console.log("[ERROR] RegisterPush: ", e);
+            channel.onCordovaXGPushReady.fire();
         });
     });
 }

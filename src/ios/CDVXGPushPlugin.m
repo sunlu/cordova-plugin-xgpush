@@ -1,145 +1,66 @@
 #import "CDVXGPushPlugin.h"
-#import "XGPush.h"
-#import "XGSetting.h"
+#import <Cordova/CDVPlugin.h>
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+#import <UserNotifications/UserNotifications.h>
+#endif
 
 static NSDictionary *_luanchOptions=nil;
+static CDVInvokedUrlCommand *currentCommand=nil;
+
+@interface CDVXGPushPlugin ()<XGPushDelegate,XGPushTokenManagerDelegate>
+
+@end
 
 @implementation CDVXGPushPlugin
 
 
 +(void)setLaunchOptions:(NSDictionary *)theLaunchOptions{
-    _luanchOptions = theLaunchOptions;
-}
-
-/*
- notification
- */
-
-- (void) registerNotificationForIOS7{
-    NSLog(@"[CDVXGPushPlugin] register under ios 8");
-    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
-}
-
-- (void) registerNotificationForIOS8
-{
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= _IPHONE80_
-    NSLog(@"[CDVXGPushPlugin] register ios 8");
-    
-    //Types
-    UIUserNotificationType types = UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
-    
-    //Actions
-    UIMutableUserNotificationAction* acceptAction = [[UIMutableUserNotificationAction alloc] init];
-    
-    acceptAction.identifier = @"ACCEPT_IDENTIFIER";
-    acceptAction.title = @"Accept";
-    acceptAction.activationMode = UIUserNotificationActivationModeForeground;
-    acceptAction.destructive = NO;
-    acceptAction.authenticationRequired = NO;
-    
-    //Categories
-    UIMutableUserNotificationCategory* inviteCategory = [[UIMutableUserNotificationCategory alloc] init];
-    
-    inviteCategory.identifier = @"INVITE_CATEGORY";
-    
-    [inviteCategory setActions:@[acceptAction] forContext:UIUserNotificationActionContextDefault];
-    
-    [inviteCategory setActions:@[acceptAction] forContext:UIUserNotificationActionContextMinimal];
-    
-    // using arc
-    // [acceptAction release];
-    
-    NSSet* categories = [NSSet setWithObjects:inviteCategory, nil];
-    
-    // using arc
-    // [inviteCategory release];
-    
-    UIUserNotificationSettings* mySettings = [UIUserNotificationSettings settingsForTypes:types categories:categories];
-    
-    [[UIApplication sharedApplication] registerUserNotificationSettings:mySettings];
-    
-    [[UIApplication sharedApplication] registerForRemoteNotifications];
-#endif
-}
-
-- (void) registerNotification
-{
-    NSLog(@"[CDVXGPushPlugin] register notification");
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= _IPHONE80_
-    // iOS8注册push方法
-    float sysVer = [[[UIDevice currentDevice] systemVersion] floatValue];
-    if (sysVer < 8) {
+    if(theLaunchOptions){
+        NSDictionary *opt=[theLaunchOptions objectForKey:@"UIApplicationLaunchOptionsRemoteNotificationKey"];
         
-        [self registerNotificationForIOS7];
-    } else {
-        [self registerNotificationForIOS8];
+        NSDictionary *alert=[[opt objectForKey:@"aps"] objectForKey:@"alert"];
+        NSMutableDictionary *customContent=[NSMutableDictionary dictionaryWithCapacity:opt.count -2];
+        for (NSString *key in opt) {
+            if(![key isEqualToString:@"aps"]&![key isEqualToString:@"xg"])[customContent setObject:[opt valueForKey:key] forKey:key];
+        }
+        _luanchOptions = @{
+                           @"content":[alert objectForKey:@"body"]?[alert objectForKey:@"body"]:@"",
+                           @"title":[alert objectForKey:@"title"]?[alert objectForKey:@"title"]:@"",
+                           @"subtitle":[alert objectForKey:@"subtitle"]?[alert objectForKey:@"subtitle"]:@"",
+                           @"customContent":customContent
+                        };
     }
-#else
-    // iOS8之前注册push方法
-    // 注册Push服务，注册后才能收到推送
-    [self registerNotificationForIOS7];
-#endif
 }
-
-
 
 /**
  * 插件初始化
  */
 - (void) pluginInitialize {
-    // 注册获取 token 回调
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didRegisterForRemoteNotificationsWithDeviceToken:) name:CDVRemoteNotification object:nil];
-    
-    // 注册错误回调
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFailToRegisterForRemoteNotificationsWithError:) name:CDVRemoteNotificationError object:nil];
-    
-    // 注册接收回调
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveRemoteNotification:) name:kXGPushPluginReceiveNotification object:nil];
-    
+ 
+    [XGPushTokenManager defaultTokenManager].delegate = self;
     uint32_t accessId = [[[[NSBundle mainBundle] objectForInfoDictionaryKey:@"XGPushMeta"] valueForKey:@"AccessID"] intValue];
     NSString* accessKey = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"XGPushMeta"] valueForKey:@"AccessKey"];
-    
     [self startApp:accessId key:accessKey];
+    
 }
 
-
-- (void) didRegisterForRemoteNotificationsWithDeviceToken:(NSNotification*)notification {
-    NSLog(@"[XGPushPlugin] receive device token: %@", notification.object);
-    self.deviceToken = notification.object;
-}
 
 - (void) didFailToRegisterForRemoteNotificationsWithError:(NSNotification*) notification {
     NSString *str = [NSString stringWithFormat: @"Error: %@",notification];
     NSLog(@"[XGPushPlugin]%@",str);
 }
 
-- (void) didReceiveRemoteNotification:(NSNotification*)notification {
-    NSLog(@"[XGPushPlugin] receive notification: %@", notification);
-    
-    //推送反馈(app运行时)
-    [XGPush handleReceiveNotification:notification.object];
-    
-    [self sendMessage:@"message" data:notification.object];
-}
 
 /**
  * 启动 xgpush
  */
 - (void) startApp:(uint32_t)assessId key:(NSString*) accessKey {
-    
     NSLog(@"[XGPushPlugin] starting with access id: %u, access key: %@", assessId, accessKey);
     
-    [XGPush startApp:assessId appKey:accessKey];
+    [[XGPush defaultManager] startXGWithAppID:assessId appKey:accessKey delegate:self ];
+    [[XGPush defaultManager] setXgApplicationBadgeNumber:0];
     
-    [XGPush initForReregister:^{
-        if (![XGPush isUnRegisterStatus]) {
-            [self registerNotification];
-        }
-    }];
-    
-    //角标清0
-    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
 }
 
 
@@ -166,49 +87,23 @@ static NSDictionary *_luanchOptions=nil;
 
 - (void) registerPush:(CDVInvokedUrlCommand*)command {
     NSString* account = [command.arguments objectAtIndex:0];
-    
-    NSLog(@"[XGPushPlugin] registerPush: account = %@, token = %@", account, self.deviceToken);
+    currentCommand=command;
+    NSLog(@"[XGPushPlugin] registerPush: account = %@, token = %@", account,[[XGPushTokenManager defaultTokenManager] deviceTokenString]);
     
     if ([account respondsToSelector:@selector(length)] && [account length] > 0) {
         NSLog(@"[XGPushPlugin] set account:%@", account);
-        [XGPush setAccount:account];
+        [[XGPushTokenManager defaultTokenManager] bindWithIdentifier:account type:XGPushTokenBindTypeAccount];
+    }else{
+        [self sendCallback:nil];
     }
-    
-    // FIXME: 放到 background thread 里运行时无法执行回调
-    NSString * result = [XGPush registerDevice:self.deviceToken successCallback:^{
-        // 成功
-        NSLog(@"[XGPushPlugin] registerPush success");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-        
-    } errorCallback:^{
-        // 失败
-        NSLog(@"[XGPushPlugin] registerPush error");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
-    
-    NSLog(@"[XGPushPlugin] registerDevice result = %@",result);
 }
 
 
 - (void) unRegisterPush:(CDVInvokedUrlCommand*)command {
+    NSString* account = [command.arguments objectAtIndex:0];
     NSLog(@"[XGPushPlugin] unRegisterPush");
-    
-    // FIXME: 放到 background thread 里运行时无法执行回调
-    [XGPush unRegisterDevice:^{
-        // 成功
-        NSLog(@"[XGPushPlugin] deregisterpush success");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-        
-    } errorCallback:^{
-        // 失败
-        NSLog(@"[XGPushPlugin] deregisterpush error");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-        
-    }];
+    currentCommand=command;
+    [[XGPushTokenManager defaultTokenManager] unbindWithIdentifer:account type:XGPushTokenBindTypeAccount];
 }
 
 - (void) getLaunchInfo:(CDVInvokedUrlCommand*)command {
@@ -225,65 +120,39 @@ static NSDictionary *_luanchOptions=nil;
 }
 
 - (void) setTag:(CDVInvokedUrlCommand*)command{
+    currentCommand=command;
     NSString* name = [command.arguments objectAtIndex:0];
     NSLog(@"[XGPushPlugin] setTag: %@", name);
     
-    [XGPush setTag:name successCallback:^{
-        // 成功
-        NSLog(@"[XGPushPlugin] setTag success");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-        
-    } errorCallback:^{
-        // 失败
-        NSLog(@"[XGPushPlugin] setTag error");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
+    [[XGPushTokenManager defaultTokenManager] bindWithIdentifier:name type:XGPushTokenBindTypeTag];
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 
 - (void) deleteTag:(CDVInvokedUrlCommand*)command{
+    currentCommand=command;
     NSString* name = [command.arguments objectAtIndex:0];
     NSLog(@"[XGPushPlugin] deleteTag: %@", name);
     
-    [XGPush delTag:name successCallback:^{
-        // 成功
-        NSLog(@"[XGPushPlugin] deleteTag success");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-        
-    } errorCallback:^{
-        // 失败
-        NSLog(@"[XGPushPlugin] deleteTag error");
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
+    [[XGPushTokenManager defaultTokenManager] unbindWithIdentifer:name type:XGPushTokenBindTypeTag];
 }
 
 
 
 - (void) addLocalNotification:(CDVInvokedUrlCommand*)command{
-    
-    NSDate *fireDate = [[NSDate new] dateByAddingTimeInterval:10];
-    
-    NSMutableDictionary *dicUserInfo = [[NSMutableDictionary alloc] init];
-    [dicUserInfo setValue:@"myid" forKey:@"clockID"];
-    NSDictionary *userInfo = dicUserInfo;
-    
-    [XGPush localNotification:fireDate alertBody:@"测试本地推送" badge:2 alertAction:@"确定" userInfo:userInfo];
-    
-    //[XGPush localNotification:<#(NSDate *)#> alertBody:<#(NSString *)#> badge:<#(int)#> alertAction:<#(NSString *)#> userInfo:<#(NSDictionary *)#>];
+        //暂时不实现
+//    NSDate *fireDate = [[NSDate new] dateByAddingTimeInterval:10];
+//
+//    NSMutableDictionary *dicUserInfo = [[NSMutableDictionary alloc] init];
+//    [dicUserInfo setValue:@"myid" forKey:@"clockID"];
+//    NSDictionary *userInfo = dicUserInfo;
 }
 
 
 - (void) enableDebug:(CDVInvokedUrlCommand*)command{
     BOOL enable = [[command.arguments objectAtIndex:0] boolValue];
-    
-    XGSetting *setting = [XGSetting getInstance];
-    
-    [setting enableDebug:enable];
-    
+    [[XGPush defaultManager] setEnableDebug:enable];
     CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [result setKeepCallback:[NSNumber numberWithBool:YES]];
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
@@ -291,7 +160,7 @@ static NSDictionary *_luanchOptions=nil;
 
 
 - (void) getToken:(CDVInvokedUrlCommand*)command{
-    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[NSString stringWithFormat: @"%@",self.deviceToken]];
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[NSString stringWithFormat: @"%@",[[XGPushTokenManager defaultTokenManager] deviceTokenString]]];
     [result setKeepCallback:[NSNumber numberWithBool:YES]];
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
@@ -304,7 +173,139 @@ static NSDictionary *_luanchOptions=nil;
     [self startApp:accessId key:accessKey];
 }
 
+- (void) sendCallbackWithResult:(CDVPluginResult*) result{
+    if(currentCommand==nil) return;
+    if (result!=nil) {
+        [self.commandDelegate sendPluginResult:result callbackId:currentCommand.callbackId];
+    }
+    currentCommand=nil;
+}
+- (void) sendCallback:(NSError*) error{
+    if (error==nil) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self sendCallbackWithResult:result];
+    } else {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        [self sendCallbackWithResult:result];
+    }
+}
 
+- (void)stopNotification:(CDVInvokedUrlCommand*)command{
+    [[XGPush defaultManager] stopXGNotification];
+}
 
+#pragma mark - XGPushDelegate
+- (void)xgPushDidFinishStart:(BOOL)isSuccess error:(NSError *)error {
+    NSLog(@"%s, result %@, error %@", __FUNCTION__, isSuccess?@"OK":@"NO", error);
+     [self sendCallback:error] ;
+}
+
+- (void)xgPushDidFinishStop:(BOOL)isSuccess error:(NSError *)error {
+    [self sendCallback:error];
+}
+
+- (void)xgPushDidSetBadge:(BOOL)isSuccess error:(NSError *)error {
+    NSLog(@"%s, result %@, error %@", __FUNCTION__, error?@"NO":@"OK", error);
+}
+- (void)xgPushDidRegisteredDeviceToken:(NSString *)deviceToken error:(NSError *)error{
+    NSLog(@"%s, result %@, error %@", __FUNCTION__, error?@"NO":@"OK", error);
+}
+// iOS 10 新增 API
+// iOS 10 会走新 API, iOS 10 以前会走到老 API
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+// App 用户点击通知
+// App 用户选择通知中的行为
+// App 用户在通知中心清除消息
+// 无论本地推送还是远程推送都会走这个回调
+- (void)xgPushUserNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)(void))completionHandler {
+    NSLog(@"[XGDemo] click notification");
+    
+    [[XGPush defaultManager] reportXGNotificationResponse:response];
+    UNNotificationContent *content= response.notification.request.content;
+    NSDictionary *userInfo=content.userInfo;
+    NSMutableDictionary *customContent=[NSMutableDictionary dictionaryWithCapacity:userInfo.count -2];
+    for (NSString *key in userInfo) {
+        if(![key isEqualToString:@"aps"]&![key isEqualToString:@"xg"])[customContent setObject:[userInfo valueForKey:key] forKey:key];
+    }
+    NSDictionary *data=@{
+                         @"content":content.body?content.body:@"",
+                         @"title":content.title?content.title:@"",
+                         @"subtitle":content.subtitle?content.subtitle:@"",
+                         @"customContent":customContent
+                         };
+    completionHandler();
+    [self sendMessage:@"click" data:data];
+}
+
+// App 在前台弹通知需要调用这个接口
+- (void)xgPushUserNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+    [[XGPush defaultManager] reportXGNotificationInfo:notification.request.content.userInfo];
+    completionHandler(UNNotificationPresentationOptionBadge | UNNotificationPresentationOptionSound | UNNotificationPresentationOptionAlert);
+}
+#endif
+
+- (void)xgPushDidReceiveRemoteNotification:(id)notification withCompletionHandler:(void (^)(NSUInteger))completionHandler {
+    if ([notification isKindOfClass:[NSDictionary class]]) {
+        completionHandler(UIBackgroundFetchResultNewData);
+    } else if ([notification isKindOfClass:[UNNotification class]]) {
+        completionHandler(UNNotificationPresentationOptionBadge | UNNotificationPresentationOptionSound | UNNotificationPresentationOptionAlert);
+    }
+}
+
+/**
+ 收到通知消息的回调，通常此消息意味着有新数据可以读取（iOS 7.0+）
+ 
+ @param application  UIApplication 实例
+ @param userInfo 推送时指定的参数
+ @param completionHandler 完成回调
+ */
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    NSLog(@"[XGDemo] receive slient Notification");
+    NSLog(@"[XGDemo] userinfo %@", userInfo);
+    [[XGPush defaultManager] reportXGNotificationInfo:userInfo];
+    completionHandler(UIBackgroundFetchResultNewData);
+    [self sendMessage:@"message" data:userInfo];
+}
+
+#pragma mark - XGPushTokenManagerDelegate
+- (void)xgPushDidBindWithIdentifier:(NSString *)identifier type:(XGPushTokenBindType)type error:(NSError *)error {
+    
+    NSLog(@"%s, id is %@, error %@", __FUNCTION__, identifier, error);
+    if(error==nil){
+        NSDictionary* data=@{
+                             @"data":[[XGPushTokenManager defaultTokenManager] deviceTokenString]
+                             };
+        CDVPluginResult* result=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:data];
+        [self sendCallbackWithResult:result];
+    }else{
+       [self sendCallback:error];
+    }
+}
+
+- (void)xgPushDidUnbindWithIdentifier:(NSString *)identifier type:(XGPushTokenBindType)type error:(NSError *)error{
+   
+    NSLog(@"%s, id is %@, error %@", __FUNCTION__, identifier, error);
+    [self sendCallback:error];
+}
+
+- (void)xgPushDidBindWithIdentifiers:(NSArray<NSString *> *)identifiers type:(XGPushTokenBindType)type error:(NSError *)error {
+    NSLog(@"%s, id is %@, error %@", __FUNCTION__, identifiers, error);
+    [self sendCallback:error];
+}
+
+- (void)xgPushDidUnbindWithIdentifiers:(NSArray<NSString *> *)identifiers type:(XGPushTokenBindType)type error:(NSError *)error {
+    NSLog(@"%s, id is %@, error %@", __FUNCTION__, identifiers, error);
+    [self sendCallback:error];
+}
+
+- (void)xgPushDidUpdatedBindedIdentifiers:(NSArray<NSString *> *)identifiers bindType:(XGPushTokenBindType)type error:(NSError *)error {
+    NSLog(@"%s, id is %@, error %@", __FUNCTION__, identifiers, error);
+    [self sendCallback:error];
+}
+
+- (void)xgPushDidClearAllIdentifiers:(XGPushTokenBindType)type error:(NSError *)error {
+    NSLog(@"%s, type is %lu, error %@", __FUNCTION__, (unsigned long)type, error);
+    [self sendCallback:error];
+}
 
 @end

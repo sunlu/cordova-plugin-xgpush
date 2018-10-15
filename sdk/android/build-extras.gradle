@@ -1,0 +1,28 @@
+repositories {
+    jcenter(){url 'http://jcenter.bintray.com/'}
+}
+ext.cdvMinSdkVersion = 20
+project.ext {
+    defaultMinSdkVersion=20 //Support cordova-android@7.0.0
+}
+android {
+    defaultConfig {
+        ndk {
+            abiFilters 'armeabi', 'armeabi-v7a'
+        }
+        manifestPlaceholders = [
+                XG_ACCESS_ID:"ANDROID_ACCESS_ID",
+                XG_ACCESS_KEY : "ANDROID_ACCESS_KEY"
+        ]
+    }
+}
+
+dependencies {
+    implementation 'com.tencent.xinge:xinge:4.2.0-beta'
+    //jg包
+    implementation 'com.tencent.jg:jg:1.1'
+    //wup包
+    implementation 'com.tencent.wup:wup:1.0.0.E-release'
+    //mid包
+    implementation 'com.tencent.mid:mid:4.0.7'
+}

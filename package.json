@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-xgpush",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "腾讯信鸽推送服务：http://xg.qq.com/",
    "cordova": {
     "id": "cordova-plugin-xgpush",
@@ -16,12 +16,12 @@
   ],  
   "repository": {
     "type": "git",
-    "url": "https://github.com/sunlu/cordova-plugin-xgpush"
+    "url": "https://github.com/huangliop/cordova-plugin-xgpush-hl"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sunlu/cordova-plugin-xgpush/issues"
+    "url": "https://github.com/huangliop/cordova-plugin-xgpush-hl/issues"
   },
-  "homepage": "https://github.com/sunlu/cordova-plugin-xgpush#readme"
+  "homepage": "https://github.com/huangliop/cordova-plugin-xgpush-hl#readme"
 }
