@@ -116,11 +116,15 @@ public class XGPushReceiver extends XGPushBaseReceiver {
     public void onNotifactionShowedResult(Context context, XGPushShowedResult message) {
         JSONObject data = new JSONObject();
         try {
+            String tmp=message.getCustomContent();
+            if(tmp!=null&&!tmp.equals("")){
+                JSONObject customContent=new JSONObject(message.getCustomContent());
+                data.put("customContent", customContent);
+            }
             data.put("type", "show");
             data.put("activity", message.getActivity());
             data.put("content", message.getContent());
             data.put("title", message.getTitle());
-            data.put("customContent", message.getCustomContent());
             data.put("msgId", message.getMsgId());
             data.put("notifactionId", message.getNotifactionId());
             data.put("notificationActionType", message.getNotificationActionType());
@@ -143,11 +147,15 @@ public class XGPushReceiver extends XGPushBaseReceiver {
             return data;
 
         try {
+            String tmp=message.getCustomContent();
+            if(tmp!=null&&!tmp.equals("")){
+                JSONObject customContent=new JSONObject(message.getCustomContent());
+                data.put("customContent", customContent);
+            }
             data.put("type", "click");
             data.put("actionType", message.getActionType());
             data.put("content", message.getContent());
             data.put("title", message.getTitle());
-            data.put("customContent", message.getCustomContent());
             data.put("msgId", message.getMsgId());
             data.put("activityName", message.getActivityName());
             data.put("notificationActionType", message.getNotificationActionType());
