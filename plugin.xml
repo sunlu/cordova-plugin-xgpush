@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<plugin xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-xgpush" version="1.0.0">
+<plugin xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-xgpush" version="1.0.1">
   <name>cordova-plugin-xgpush</name>
   <description>Tencent XGPush Plugin</description>
   <license>MIT</license>

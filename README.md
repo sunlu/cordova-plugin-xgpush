@@ -2,9 +2,17 @@
 
 **Android 已修改为Gradle打包方式。build的时候可能会拉不下来，请百度‘jcenter 慢’解决**
 
-**Android 暂时没有支持第三方渠道**
-
 **本次升级我只验证了click事件和getLaunchInfo功能，如果有其他功能不可用，请提交issue。**
+
+## 关于开启厂商推送通道
+
+>1.手动删除`工程目录/plugins/cordova-plugin-xgpush/sdk/android/build-extras.gradle`,里面的注释和添加相应配置。
+
+>2.手动删除`工程目录/plugins/cordova-plugin-xgpush/src/android/XGPushPlugin.java`,里面35到50行的注释和添加相应配置。
+
+>3.手动删除`工程目录/platforms/android/cordova-plugin-xgpush/*-build-extras.gradle`,里面的注释和添加相应配置。
+
+>4.手动删除`工程目录/platforms/android/src/net/sunlu/xgpush/XGPushPlugin.java`,里面35到50行的注释和添加相应配置。
 
 SDK     | version
 ------- | --------------------------------

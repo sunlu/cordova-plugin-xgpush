@@ -3,7 +3,7 @@ repositories {
 }
 ext.cdvMinSdkVersion = 20
 project.ext {
-    defaultMinSdkVersion=20 //Support cordova-android@7.0.0
+    defaultMinSdkVersion=20 
 }
 android {
     defaultConfig {
@@ -13,6 +13,8 @@ android {
         manifestPlaceholders = [
                 XG_ACCESS_ID:"ANDROID_ACCESS_ID",
                 XG_ACCESS_KEY : "ANDROID_ACCESS_KEY"
+                // ,PACKAGE_NAME:"报名",
+                // ,HW_APPID: "华为的appid"
         ]
     }
 }
@@ -25,4 +27,12 @@ dependencies {
     implementation 'com.tencent.wup:wup:1.0.0.E-release'
     //mid包
     implementation 'com.tencent.mid:mid:4.0.7'
+    //开启厂商通道，请删除上面的引用，加入下面的引用
+    // implementation 'com.tencent.xinge:xinge:3.2.6-release'
+    // implementation'com.tencent.jg:jg:1.1'
+    // implementation 'com.tencent.wup:wup:1.0.0.E-release'
+    // implementation 'com.tencent.mid:mid:4.0.6-release'
+    // implementation 'com.tencent.xinge:mipush:3.2.6-release'
+    // implementation 'com.tencent.xinge:xghw:3.2.6-release'
+    // implementation 'com.tencent.xinge:xgmz:3.2.6-release'
 }

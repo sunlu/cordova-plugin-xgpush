@@ -32,6 +32,13 @@ public class XGPushPlugin extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         context = cordova.getActivity().getApplicationContext();
+        // XGPushConfig.setMiPushAppId(context, 小米appid);
+        // XGPushConfig.setMiPushAppKey(context, 小米appkey);
+        // XGPushConfig.setHuaweiDebug(true);
+        // XGPushConfig.setMzPushAppId(context, 魅族appid);
+        // XGPushConfig.setMzPushAppKey(context, 魅族appkey);
+        // XGPushConfig.enableOtherPush(context, true);
+    
     }
 
     @Override
