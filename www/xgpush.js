@@ -56,7 +56,18 @@ function XGPush() {
     };
 
     this.getLaunchInfo = function (successCallback) {
-        exec(successCallback, null, "XGPush", "getLaunchInfo", []);
+        exec(function(event){
+            if(event.customContent&&typeof event.customContent ==="string"){
+                try {
+                    var objs=JSON.parse(event.customContent);
+                    event.customContent=objs;
+                    event.customContent=Object.assign(...objs);
+                } catch (error) {
+
+                }
+            }
+            successCallback(event);
+        }, null, "XGPush", "getLaunchInfo", []);
     };
 
     this.getToken = function (successCallback) {
@@ -76,6 +87,16 @@ function XGPush() {
             function (event) {
                 console.log("[XGPush] Event = " + event.type + ": ", event);
                 if (event && (event.type in me.channels)) {
+                    //格式化自定义数据集
+                    if(event.customContent&&typeof event.customContent ==="string"){
+                        try {
+                            var objs=JSON.parse(event.customContent);
+                            event.customContent=objs;
+                            event.customContent=Object.assign(...objs);
+                        } catch (error) {
+    
+                        }
+                    }
                     me.channels[event.type].fire(event);
                 }
             },

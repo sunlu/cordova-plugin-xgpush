@@ -160,7 +160,7 @@ static CDVInvokedUrlCommand *currentCommand=nil;
 
 
 - (void) getToken:(CDVInvokedUrlCommand*)command{
-    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[NSString stringWithFormat: @"%@",[[XGPushTokenManager defaultTokenManager] deviceTokenString]]];
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[[XGPushTokenManager defaultTokenManager] deviceTokenString]];
     [result setKeepCallback:[NSNumber numberWithBool:YES]];
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }

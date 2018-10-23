@@ -2,9 +2,24 @@
 
 **Android 已修改为Gradle打包方式。build的时候可能会拉不下来，请百度‘jcenter 慢’解决**
 
-**Android 暂时没有支持第三方渠道**
-
 **本次升级我只验证了click事件和getLaunchInfo功能，如果有其他功能不可用，请提交issue。**
+
+## 关于开启厂商推送通道
+
+***由于厂商通道，目前只支持android 3.2.6版本，经我测试。存在如下BUG，由于不便于插件化，所以我就不支持了。如果你有android开发能力可以更具下面的思路解决，如果没有就也可以等待官方支持4.2.0***
+
+|平台|BUG|解决思路
+|----|---|---|
+|小米|当app在前台时，点击通知不会回调onNotifactionClickedResult 方法|在onNewIntent中接收小米的回调数据|
+|华为|当app退出或者杀进程后，点击通知打开app，调用，getLaunchInfo发回为空|自己新建一个专门接收华为点击广播的接收器，在接收器中把传递来的数据存在跨进程（Mode=MODE_MULTI_PROCESS）的SharedPreferences，然后在getLaunchInfo中去取出来
+
+>1.手动删除`工程目录/plugins/cordova-plugin-xgpush/sdk/android/build-extras.gradle`,里面的注释和添加相应配置。
+
+>2.手动删除`工程目录/plugins/cordova-plugin-xgpush/src/android/XGPushPlugin.java`,里面35到50行的注释和添加相应配置。
+
+>3.手动删除`工程目录/platforms/android/cordova-plugin-xgpush/*-build-extras.gradle`,里面的注释和添加相应配置。
+
+>4.手动删除`工程目录/platforms/android/src/net/sunlu/xgpush/XGPushPlugin.java`,里面35到50行的注释和添加相应配置。
 
 SDK     | version
 ------- | --------------------------------
@@ -54,7 +69,7 @@ iOS版本需要在xCode里面手动开启，[Push Notifications]和[Background M
 方法|方法名|参数说明|成功回调|失败回调
 ------------------------------------|------------------|---------------------------------------------------|--------|--------
 registerPush(account,success,error) | 绑定账号注册     | account：绑定的账号，绑定后可以针对账号发送推送消息|{data:"设备的token"}|{data:"",code:"",message:""} //android Only
-unRegisterPush(account,success,error)       | 反注册           |account：绑定的账号|{flag:0}|{flag:0}
+unRegisterPush(success,error)       | 反注册           |account：绑定的账号|{flag:0}|{flag:0}
 setTag(tagName)       | 设置标签         | tagName：待设置的标签名称
 deleteTag(tagName)    | 删除标签         | tagName：待设置的标签名称
 addLocalNotification(type,title,content,success,error) | 添加本地通知| type:1通知，2消息 title:标题 content:内容
