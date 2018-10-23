@@ -69,7 +69,7 @@ iOS版本需要在xCode里面手动开启，[Push Notifications]和[Background M
 方法|方法名|参数说明|成功回调|失败回调
 ------------------------------------|------------------|---------------------------------------------------|--------|--------
 registerPush(account,success,error) | 绑定账号注册     | account：绑定的账号，绑定后可以针对账号发送推送消息|{data:"设备的token"}|{data:"",code:"",message:""} //android Only
-unRegisterPush(account,success,error)       | 反注册           |account：绑定的账号|{flag:0}|{flag:0}
+unRegisterPush(success,error)       | 反注册           |account：绑定的账号|{flag:0}|{flag:0}
 setTag(tagName)       | 设置标签         | tagName：待设置的标签名称
 deleteTag(tagName)    | 删除标签         | tagName：待设置的标签名称
 addLocalNotification(type,title,content,success,error) | 添加本地通知| type:1通知，2消息 title:标题 content:内容
